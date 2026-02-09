@@ -7,11 +7,11 @@
 .global default_handler
 
 /* 存储器地址信息，用于引导程序跳转到应用程序 */
-.word _data_flash_addr      /* 数据段在Flash中的起始地址 */
-.word _data_ram_addr        /* 数据段在RAM中的起始地址 */
-.word _data_ram_end         /* 数据段在RAM中的结束地址 */
-.word _bss_ram_addr         /* BSS段在RAM中的起始地址 */
-.word _bss_ram_end          /* BSS段在RAM中的结束地址 */
+.word _assigned_flash_addr      /* 数据段在Flash中的起始地址 */
+.word _assigned_ram_addr        /* 数据段在RAM中的起始地址 */
+.word _assigned_ram_end         /* 数据段在RAM中的结束地址 */
+.word _unassigned_ram_addr         /* BSS段在RAM中的起始地址 */
+.word _unassigned_ram_end          /* BSS段在RAM中的结束地址 */
 
 .section .text.reset_handler
 .type reset_handler, %function
@@ -27,9 +27,9 @@ reset_handler:
   bl SystemInit 
 
   /* 将数据段初始化值从Flash复制到SRAM */
-  ldr r0, =_data_ram_addr   /* 源地址：RAM中数据段的起始地址 */
-  ldr r1, =_data_ram_end    /* 目标地址：RAM中数据段的结束地址 */
-  ldr r2, =_data_flash_addr /* Flash中存储的初始化数据地址 */
+  ldr r0, =_assigned_ram_addr   /* 源地址：RAM中数据段的起始地址 */
+  ldr r1, =_assigned_ram_end    /* 目标地址：RAM中数据段的结束地址 */
+  ldr r2, =_assigned_flash_addr /* Flash中存储的初始化数据地址 */
   movs r3, #0               /* 偏移量初始化为0 */
   b loop_copy_data
 
@@ -44,8 +44,8 @@ loop_copy_data:
   bcc copy_data          /* 如果未达到结束位置则继续复制 */
  
 /* 使用0填充BSS段(未初始化的数据段) */
-  ldr r2, =_bss_ram_addr    /* 获取BSS段起始地址 */
-  ldr r4, =_bss_ram_end     /* 获取BSS段结束地址 */
+  ldr r2, =_unassigned_ram_addr    /* 获取BSS段起始地址 */
+  ldr r4, =_unassigned_ram_end     /* 获取BSS段结束地址 */
   movs r3, #0               /* 加载0值 */
   b loop_fill_bss_zero
 
